@@ -5,7 +5,7 @@ pool:
   vmImage: 'Ubuntu-16.04'
 
 variables:
-- group: ml
+- group: ml_dev
 
 steps:
 
@@ -21,14 +21,14 @@ steps:
   inputs:
     azureSubscription: $(azureSubscription)
     scriptLocation: inlineScript
-    inlineScript: 'az ml folder attach -w ml_workspace_test -g ml_test_rg'
+    inlineScript: 'az ml folder attach -w $(workspace) -g $(rg)'
 
 - task: AzureCLI@1
   displayName: 'Create compute for training'
   inputs:
     azureSubscription: $(azureSubscription)
     scriptLocation: inlineScript
-    inlineScript: 'az ml computetarget create amlcompute -n cpu --vm-size STANDARD_D2_V2 --max-nodes 4 -w ml_workspace_test -g ml_test_rg'
+    inlineScript: 'az ml computetarget create amlcompute -n cpu --vm-size STANDARD_D2_V2 --max-nodes 4 -w $(workspace) -g $(rg)'
   
 - task: AzureCLI@1
   displayName: 'Submit script run'
@@ -42,18 +42,18 @@ steps:
   inputs:
     azureSubscription: $(azureSubscription)
     scriptLocation: inlineScript
-    inlineScript: 'az ml model register -n mymodel -p sklearn_regression_model.pkl -t model.json -w ml_workspace_test -g ml_test_rg'
+    inlineScript: 'az ml model register -n mymodel -p sklearn_regression_model.pkl -t model.json -w $(workspace) -g $(rg)'
 
 - task: AzureCLI@1
   displayName: 'Deploy model'
   inputs:
     azureSubscription: $(azureSubscription)
     scriptLocation: inlineScript
-    inlineScript: 'az ml model deploy -n acicicd -f model.json --ic inferenceConfig.yml --dc deploymentConfig.yml --overwrite -w ml_workspace_test -g ml_test_rg'
+    inlineScript: 'az ml model deploy -n acicicd -f model.json --ic inferenceConfig.yml --dc deploymentConfig.yml --overwrite -w $(workspace) -g $(rg)'
 
 - task: AzureCLI@1
   displayName: 'Delete deployed service'
   inputs:
     azureSubscription: $(azureSubscription)
     scriptLocation: inlineScript
-    inlineScript: 'az ml service delete -n acicicd -w ml_workspace_test -g ml_test_rg'
+    inlineScript: 'az ml service delete -n acicicd -w $(workspace) -g $(rg)'
