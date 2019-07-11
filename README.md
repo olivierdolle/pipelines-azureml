@@ -1,3 +1,5 @@
+[![Build Status](https://dev.azure.com/adm0181/test_devops/_apis/build/status/olivierdolle.pipelines-azureml?branchName=master)](https://dev.azure.com/adm0181/test_devops/_build/latest?definitionId=1&branchName=master)
+
 # Introduction 
 Sample files used to set up an E2E training and deployment pipeline with the Azure ML CLI.
 For more info, please visit https://docs.microsoft.com/azure/machine-learning/service/reference-azure-machine-learning-cli
