@@ -56,4 +56,4 @@ steps:
   inputs:
     azureSubscription: $(azureSubscription)
     scriptLocation: inlineScript
-    inlineScript: 'az ml service delete -n acicicd'
+    inlineScript: 'az ml service delete -n acicicd -w ml_workspace_test -g ml_test_rg'
