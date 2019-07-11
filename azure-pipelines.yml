@@ -49,7 +49,7 @@ steps:
   inputs:
     azureSubscription: $(azureSubscription)
     scriptLocation: inlineScript
-    inlineScript: 'az ml model deploy -n acicicd -f model.json --ic inferenceConfig.yml --dc deploymentConfig.yml --overwrite'
+    inlineScript: 'az ml model deploy -n acicicd -f model.json --ic inferenceConfig.yml --dc deploymentConfig.yml --overwrite -w ml_workspace_test -g ml_test_rg'
 
 - task: AzureCLI@1
   displayName: 'Delete deployed service'
