@@ -1,59 +1,81 @@
 trigger:
-- master
+  - master
 
 pool:
   vmImage: 'Ubuntu-16.04'
 
 variables:
-- group: ml_dev
+- group: dev
+- name: compute_name
+  value: cpu
+- name: experiment_name
+  value: test
+- name: model_name
+  value: test_model
+- name: run_config
+  value: sklearn
+- name: train_file
+  value: train.py
+- name: conda_yml
+  value: myenv.yml
+- name: path_to_serialized_model
+  value: sklearn_regression_model.pkl
+- name: model_json
+  value: model.json
+- name: inference_config_yml
+  value: inferenceConfig.yml
+- name: deploy_config_yml
+  value: deploymentConfig.yml
+- name: deploy_service_name
+  value: test-deploy
 
 steps:
 
 - task: AzureCLI@1
   displayName: 'Install the CLI'
   inputs:
-    azureSubscription: $(azureSubscription)
+    azureSubscription: $(azure_subscription)
     scriptLocation: inlineScript
     inlineScript: 'az extension add -n azure-cli-ml'
 
 - task: AzureCLI@1
   displayName: 'Attach folder to workspace'
   inputs:
-    azureSubscription: $(azureSubscription)
+    azureSubscription: $(azure_subscription)
     scriptLocation: inlineScript
-    inlineScript: 'az ml folder attach -w $(workspace) -g $(rg)'
+    inlineScript: 'az ml folder attach -w $(workspace_name) -g $(rg_name)'
 
 - task: AzureCLI@1
   displayName: 'Create compute for training'
   inputs:
-    azureSubscription: $(azureSubscription)
+    azureSubscription: $(azure_subscription)
     scriptLocation: inlineScript
-    inlineScript: 'az ml computetarget create amlcompute -n cpu --vm-size STANDARD_D2_V2 --max-nodes 4 -w $(workspace) -g $(rg)'
-  
+    inlineScript: 'az ml computetarget create amlcompute -n $(compute_name) --vm-size STANDARD_D2_V2 --max-nodes 4 -w $(workspace_name) -g $(rg_name)'
+
 - task: AzureCLI@1
   displayName: 'Submit script run'
   inputs:
-    azureSubscription: $(azureSubscription)
+    azureSubscription: $(azure_subscription)
     scriptLocation: inlineScript
-    inlineScript: 'az ml run submit-script -c sklearn -e test -d myenv.yml train.py'
+    inlineScript: 'az ml run submit-script -c $(run_config) -e $(experiment_name) -d $(conda_yml) $(train_file)'
 
 - task: AzureCLI@1
   displayName: 'Register model'
   inputs:
-    azureSubscription: $(azureSubscription)
+    azureSubscription: $(azure_subscription)
     scriptLocation: inlineScript
-    inlineScript: 'az ml model register -n mymodel -p sklearn_regression_model.pkl -t model.json -w $(workspace) -g $(rg)'
+    inlineScript: 'az ml model register -n $(model_name) -p $(path_to_serialized_model) -t $(model_json) -w $(workspace_name) -g $(rg_name)'
 
 - task: AzureCLI@1
   displayName: 'Deploy model'
   inputs:
-    azureSubscription: $(azureSubscription)
+    azureSubscription: $(azure_subscription)
     scriptLocation: inlineScript
-    inlineScript: 'az ml model deploy -n acicicd -f model.json --ic inferenceConfig.yml --dc deploymentConfig.yml --overwrite -w $(workspace) -g $(rg)'
+    inlineScript: 'az ml model deploy -n $(deploy_service_name) -f $(model_json) --ic $(inference_config_yml) --dc $(deploy_config_yml) --overwrite -w $(workspace_name) -g $(rg_name)'
 
 - task: AzureCLI@1
   displayName: 'Delete deployed service'
   inputs:
-    azureSubscription: $(azureSubscription)
+    azureSubscription: $(azure_subscription)
     scriptLocation: inlineScript
-    inlineScript: 'az ml service delete -n acicicd -w $(workspace) -g $(rg)'
+    inlineScript: 'az ml service delete -n $(deploy_service_name) -w $(workspace_name) -g $(rg_name)'
