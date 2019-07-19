@@ -36,7 +36,7 @@ steps:
   inputs:
     azureSubscription: $(azure_subscription)
     scriptLocation: inlineScript
-    inlineScript: 'az extension add -n azure-cli-ml'
+    inlineScript: 'az extension add -n azure-cli-mlazeaze'
 
 - task: AzureCLI@1
   displayName: 'Attach folder to workspace'
